@@ -1,3 +1,8 @@
+.jshintrc
+.project
+.settings/
+.sublime-project
+
 # Logs
 logs
 *.log
