@@ -101,7 +101,7 @@ provider.initialize({
       login: {
         account: account.accountId,
         acr: details.params.acr_values || 'Level3',
-        amr: ['BankID'],
+        amr: 'BankID',
         remember: !!ctx.request.body.remember,
         ts: Math.floor(Date.now() / 1000),
       },

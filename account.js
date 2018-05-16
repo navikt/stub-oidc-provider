@@ -21,7 +21,7 @@ class Account {
     return {
     	sub: this.accountUuid, 
         pid: this.accountId,
-        locale: 'no',
+        locale: 'nb',
         jti: 'dummyTokenJti',
         sid: 'dummyTokenSid',
     };
