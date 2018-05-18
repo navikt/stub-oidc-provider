@@ -8,12 +8,12 @@ const querystring = require('querystring');
 const Router = require('koa-router');
 const render = require('koa-ejs');
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 const Account = require('./account');
 const { config, clients, certificates } = require('./settings');
 
-const issuer = process.env.ISSUER || 'http://localhost:3000';
+const issuer = process.env.ISSUER || 'http://localhost:8080';
 
 config.findById = Account.findById;
 
