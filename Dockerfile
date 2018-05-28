@@ -9,4 +9,6 @@ RUN npm install
 COPY . .
 EXPOSE 8080
 
+ENV DEBUG oidc-provider* 
+
 CMD ["node", "index.js"]
