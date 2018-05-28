@@ -11,15 +11,19 @@ const render = require('koa-ejs');
 const port = process.env.PORT || 8080;
 
 const Account = require('./account');
-const { config, clients, certificates } = require('./settings');
 
-const issuer = process.env.ISSUER || 'http://localhost:8080';
+
+
+const { config, clients, certificates} = require('./settings');
+
+const issuer = process.env.ISSUER || 'https://localhost:8080';
 
 config.findById = Account.findById;
 
 const provider = new Provider(issuer, config);
-
 provider.defaultHttpOptions = { timeout: 15000 };
+
+
 
 provider.initialize({
   clients,
@@ -32,7 +36,7 @@ provider.initialize({
   });
 
   if (process.env.NODE_ENV === 'hosted') {
-    //provider.proxy = true;
+    provider.proxy = true;
     set(config, 'cookies.short.secure', true);
     set(config, 'cookies.long.secure', true);
 
@@ -56,7 +60,6 @@ provider.initialize({
   router.get('/interaction/:grant', async (ctx, next) => {
     const details = await provider.interactionDetails(ctx.req);
     const client = await provider.Client.find(details.params.client_id);
-    console.log('###### params:' + details.params);
     if (details.interaction.error === 'login_required') {
       await ctx.render('login', {
         client,
@@ -111,6 +114,10 @@ provider.initialize({
     await provider.interactionFinished(ctx.req, ctx.res, result);
     await next();
   });
+  
+ /* router.post('/*', body, async (ctx, next) => {
+      console.log('Body:' + JSON.stringify(ctx.request.body))
+      });*/
 
   provider.use(router.routes());
 })

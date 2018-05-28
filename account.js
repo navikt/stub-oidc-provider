@@ -19,7 +19,7 @@ class Account {
    */
   async claims(use, scope) { // eslint-disable-line no-unused-vars
     return {
-    	sub: this.accountUuid, 
+    	sub: this.accountId,//this.accountUuid, 
         pid: this.accountId,
         locale: 'nb',
         jti: 'dummyTokenJti',
