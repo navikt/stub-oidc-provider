@@ -6,7 +6,8 @@ env:
   global:
   - TZ='Europe/Oslo'
   - RELEASE_VERSION="$(git fetch --unshallow || true && git rev-list --count $TRAVIS_COMMIT)"
-  - DOCKER_IMAGE_FULL_NAME="$TRAVIS_REPO_SLUG:v"
+  - DOCKER_IMAGE_FULL_NAME="$TRAVIS_REPO_SLUG:latest"
+  
 script: docker build -t "$DOCKER_IMAGE_FULL_NAME" .
 deploy:
   provider: script
