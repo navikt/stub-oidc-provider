@@ -103,7 +103,8 @@ module.exports.config = {
 	                             "RS512",
 	                             "PS256",
 	                             "PS384",
-	                             "PS512"] }
+	                             "PS512"] },
+	 
 };
 
 module.exports.clients = [
@@ -119,7 +120,7 @@ module.exports.clients = [
 	client_secret: process.env.STUB_CLIENT_SECRET || 'secretsarehardtokeep',
 	grant_types: ['refresh_token', 'authorization_code'],
 	redirect_uris: ['http://localhost:7000/callback', 'https://login.microsoftonline.com/te/navtestb2c.onmicrosoft.com/oauth2/authresp'],
-	token_endpoint_auth_method: 'client_secret_basic'
+	token_endpoint_auth_method: 'client_secret_post'
 }];
 
 module.exports.certificates = [{
