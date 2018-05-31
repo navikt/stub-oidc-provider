@@ -24,7 +24,6 @@ const provider = new Provider(issuer, config);
 provider.defaultHttpOptions = { timeout: 15000 };
 
 
-
 provider.initialize({
   clients,
   keystore: { keys: certificates },
@@ -54,17 +53,28 @@ provider.initialize({
       }
     });
   }
-
-  const router = new Router();
-  const acrRequested = '';
+ 
+  const router = new Router(); 
+  
+  
+  
   router.get('/interaction/:grant', async (ctx, next) => {
+	
     const details = await provider.interactionDetails(ctx.req);
     const client = await provider.Client.find(details.params.client_id);
+    
+    console.log('ctx:' + JSON.stringify(ctx));
+	if (!ctx.get('x-ms-client-principal-id') /*&& process.env.WEBSITE_AUTH_ENABLED*/){
+	   console.log('no principal id, found redirecting to /.auth/login/aad');
+	   ctx.redirect('/.auth/login/aad?post_login_redirect_url=' + ctx.url);
+	}  
+    
     if (details.interaction.error === 'login_required') {
       await ctx.render('login', {
         client,
         details,
-        title: 'Sign-in',
+        title: 'Sign-in as:',
+        aadPrincipalName: ctx.request.header['x-ms-client-principal-name'] || 'anonymous',
         debug: querystring.stringify(details.params, ',<br/>', ' = ', {
           encodeURIComponent: value => value,
         }),
@@ -98,6 +108,7 @@ provider.initialize({
   });
 
   router.post('/interaction/:grant/login', body, async (ctx, next) => {
+	  
     const account = await Account.findByLogin(ctx.request.body.login);
     const details = await provider.interactionDetails(ctx.req);
     const result = {
@@ -110,14 +121,15 @@ provider.initialize({
       },
       consent: {},
     };
-
     await provider.interactionFinished(ctx.req, ctx.res, result);
     await next();
   });
   
- /* router.post('/*', body, async (ctx, next) => {
-      console.log('Body:' + JSON.stringify(ctx.request.body))
-      });*/
+  router.get('/*', body, async (ctx, next) => {
+	  console.log('req:' + JSON.stringify(ctx.request));
+	  console.log('header: ' + ctx.request.header['x-ms-client-principal-id']);
+      await next();
+  });
 
   provider.use(router.routes());
 })
