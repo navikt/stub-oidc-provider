@@ -8,15 +8,14 @@ const querystring = require('querystring');
 const Router = require('koa-router');
 const render = require('koa-ejs');
 
-const port = process.env.PORT || 8080;
-
 const Account = require('./account');
-
-
-
 const { config, clients, certificates} = require('./settings');
 
+const port = process.env.PORT || 8080;
 const issuer = process.env.ISSUER || 'https://localhost:8080';
+
+//AAD specific header, can only be set by azure when running as AppService
+const PRINCIPAL_NAME_HEADER = 'x-ms-client-principal-name';
 
 config.findById = Account.findById;
 
@@ -56,8 +55,6 @@ provider.initialize({
 
 	const router = new Router(); 
 
-
-
 	router.get('/interaction/:grant', async (ctx, next) => {
 
 		const details = await provider.interactionDetails(ctx.req);
@@ -65,7 +62,7 @@ provider.initialize({
 
 		if(process.env['WEBSITE_AUTH_ENABLED'] === 'true'){
 			console.log('Authentication is enabled for site, check required headers');
-			if (!ctx.get('x-ms-client-principal-id')){
+			if (!ctx.get(PRINCIPAL_NAME_HEADER)){
 				console.log('no principal id, found redirecting to /.auth/login/aad');
 				ctx.redirect('/.auth/login/aad?post_login_redirect_url=' + ctx.url);
 			}  
@@ -113,8 +110,8 @@ provider.initialize({
 	});
 
 	router.post('/interaction/:grant/login', body, async (ctx, next) => {
-
-		const account = await Account.findByLogin(ctx.request.body.login);
+		const principalName = ctx.request.header[PRINCIPAL_NAME_HEADER] || 'anonymous';
+		const account = await Account.findByLogin(ctx.request.body.login, principalName);
 		const details = await provider.interactionDetails(ctx.req);
 		const result = {
 				login: {
