@@ -63,11 +63,17 @@ provider.initialize({
     const details = await provider.interactionDetails(ctx.req);
     const client = await provider.Client.find(details.params.client_id);
     
-    console.log('ctx:' + JSON.stringify(ctx));
-	if (!ctx.get('x-ms-client-principal-id') /*&& process.env.WEBSITE_AUTH_ENABLED*/){
-	   console.log('no principal id, found redirecting to /.auth/login/aad');
-	   ctx.redirect('/.auth/login/aad?post_login_redirect_url=' + ctx.url);
-	}  
+    
+    if(process.env['WEBSITE_AUTH_ENABLED']){
+    	console.log('Authentication is enabled for site, check required headers');
+    	if (!ctx.get('x-ms-client-principal-id')){
+		   console.log('no principal id, found redirecting to /.auth/login/aad');
+		   ctx.redirect('/.auth/login/aad?post_login_redirect_url=' + ctx.url);
+		}  
+    } else {
+    	console.log('Authentication is NOT enabled for site.');
+    }
+	
     
     if (details.interaction.error === 'login_required') {
       await ctx.render('login', {
