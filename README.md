@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/navikt/stub-oidc-provider.svg?branch=master)](https://travis-ci.org/navikt/stub-oidc-provider)
 # stub-oidc-provider
 
 A simple OpenID Connect identity provider with stubbed login (i.e. accepts all logins). Based on the great NodeJS module [oidc-provider](https://github.com/panva/node-oidc-provider).
