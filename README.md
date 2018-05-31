@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/navikt/stub-oidc-provider.svg?branch=master)](https://travis-ci.org/navikt/stub-oidc-provider)
+
 # stub-oidc-provider
 
 A simple OpenID Connect identity provider with stubbed login (i.e. accepts all logins). Based on the great NodeJS module [oidc-provider](https://github.com/panva/node-oidc-provider).
@@ -15,8 +16,9 @@ The stub-oidc-provider has been deployed as an Azure AppService (https://docs.mi
 
 For NAV IKT users the  stub-oidc-provider will never be used directly (with the exception of the actual user interaction). It has however been configured as an Identity Provider in test environments so that users can choose to use this provider for test purposes.
 
+If you want to test the provider and see the contents of the ID token you can hit this link:
 
-
+- https://nav-idporten-stub.azurewebsites.net/auth?client_id=test_implicit_app&redirect_uri=https://jwt.io&response_type=id_token&scope=openid&nonce=123&state=321&acr_values=Level4
 
 
 ### 
