@@ -9,10 +9,17 @@ env:
   - DOCKER_IMAGE_NAME="$TRAVIS_REPO_SLUG"
   - DOCKER_IMAGE_WITH_TAG="$DOCKER_IMAGE_NAME:$RELEASE_VERSION"
   - DOCKER_IMAGE_LATEST="$DOCKER_IMAGE_NAME:latest"
+
+script: 
+  - if [[ $TRAVIS_BRANCH =~ (^master) ]]; 
+    then
+      docker build -t "$DOCKER_IMAGE_WITH_TAG" . && docker tag "$DOCKER_IMAGE_WITH_TAG" "$DOCKER_IMAGE_LATEST"
+    else 
+      docker build -t "$DOCKER_IMAGE_NAME:$TRAVIS_BRANCH" .
+    fi
   
-script: docker build -t "$DOCKER_IMAGE_WITH_TAG" . && docker tag "$DOCKER_IMAGE_WITH_TAG" "$DOCKER_IMAGE_LATEST"
 deploy:
   provider: script
   script: docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" && docker push "$DOCKER_IMAGE_NAME"
   on:
-    branch: master
+    all_branches: true
