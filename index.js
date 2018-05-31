@@ -25,122 +25,121 @@ provider.defaultHttpOptions = { timeout: 15000 };
 
 
 provider.initialize({
-  clients,
-  keystore: { keys: certificates },
+	clients,
+	keystore: { keys: certificates },
 }).then(() => {
-  render(provider.app, {
-    cache: false,
-    layout: '_layout',
-    root: path.join(__dirname, 'views'),
-  });
+	render(provider.app, {
+		cache: false,
+		layout: '_layout',
+		root: path.join(__dirname, 'views'),
+	});
 
-  if (process.env.NODE_ENV === 'hosted') {
-    provider.proxy = true;
-    set(config, 'cookies.short.secure', true);
-    set(config, 'cookies.long.secure', true);
+	if (process.env.NODE_ENV === 'hosted') {
+		provider.proxy = true;
+		set(config, 'cookies.short.secure', true);
+		set(config, 'cookies.long.secure', true);
 
-    provider.use(async (ctx, next) => {
-      if (ctx.secure) {
-        await next();
-      } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
-        ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
-      } else {
-        ctx.body = {
-          error: 'invalid_request',
-          error_description: 'only use https',
-        };
-        ctx.status = 400;
-      }
-    });
-  }
- 
-  const router = new Router(); 
-  
-  
-  
-  router.get('/interaction/:grant', async (ctx, next) => {
-	
-    const details = await provider.interactionDetails(ctx.req);
-    const client = await provider.Client.find(details.params.client_id);
-    
-    
-    if(process.env['WEBSITE_AUTH_ENABLED']){
-    	console.log('Authentication is enabled for site, check required headers');
-    	if (!ctx.get('x-ms-client-principal-id')){
-		   console.log('no principal id, found redirecting to /.auth/login/aad');
-		   ctx.redirect('/.auth/login/aad?post_login_redirect_url=' + ctx.url);
-		}  
-    } else {
-    	console.log('Authentication is NOT enabled for site.');
-    }
-	
-    
-    if (details.interaction.error === 'login_required') {
-      await ctx.render('login', {
-        client,
-        details,
-        title: 'Sign-in as:',
-        aadPrincipalName: ctx.request.header['x-ms-client-principal-name'] || 'anonymous',
-        debug: querystring.stringify(details.params, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
-        interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
-      });
-    } else {
-      await ctx.render('interaction', {
-        client,
-        details,
-        title: 'Authorize',
-        debug: querystring.stringify(details.params, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
-        interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
-          encodeURIComponent: value => value,
-        }),
-      });
-    }
+		provider.use(async (ctx, next) => {
+			if (ctx.secure) {
+				await next();
+			} else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
+				ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
+			} else {
+				ctx.body = {
+						error: 'invalid_request',
+						error_description: 'only use https',
+				};
+				ctx.status = 400;
+			}
+		});
+	}
 
-    await next();
-  });
+	const router = new Router(); 
 
-  const body = bodyParser();
 
-  router.post('/interaction/:grant/confirm', body, async (ctx, next) => {
-    const result = { consent: {} };
-    await provider.interactionFinished(ctx.req, ctx.res, result);
-    await next();
-  });
 
-  router.post('/interaction/:grant/login', body, async (ctx, next) => {
-	  
-    const account = await Account.findByLogin(ctx.request.body.login);
-    const details = await provider.interactionDetails(ctx.req);
-    const result = {
-      login: {
-        account: account.accountId,
-        acr: details.params.acr_values || 'Level3',
-        amr: 'BankID',
-        remember: !!ctx.request.body.remember,
-        ts: Math.floor(Date.now() / 1000),
-      },
-      consent: {},
-    };
-    await provider.interactionFinished(ctx.req, ctx.res, result);
-    await next();
-  });
-  
-  router.get('/*', body, async (ctx, next) => {
-	  console.log('req:' + JSON.stringify(ctx.request));
-	  console.log('header: ' + ctx.request.header['x-ms-client-principal-id']);
-      await next();
-  });
+	router.get('/interaction/:grant', async (ctx, next) => {
 
-  provider.use(router.routes());
+		const details = await provider.interactionDetails(ctx.req);
+		const client = await provider.Client.find(details.params.client_id);
+
+		if(process.env['WEBSITE_AUTH_ENABLED'] === 'true'){
+			console.log('Authentication is enabled for site, check required headers');
+			if (!ctx.get('x-ms-client-principal-id')){
+				console.log('no principal id, found redirecting to /.auth/login/aad');
+				ctx.redirect('/.auth/login/aad?post_login_redirect_url=' + ctx.url);
+			}  
+		} else {
+			console.log('Authentication is NOT enabled for site. Value of WEBSITE_AUTH_ENABLED=' + process.env['WEBSITE_AUTH_ENABLED']);
+		}
+
+
+		if (details.interaction.error === 'login_required') {
+			await ctx.render('login', {
+				client,
+				details,
+				title: 'Sign-in as:',
+				aadPrincipalName: ctx.request.header['x-ms-client-principal-name'] || 'anonymous',
+				debug: querystring.stringify(details.params, ',<br/>', ' = ', {
+					encodeURIComponent: value => value,
+				}),
+				interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
+					encodeURIComponent: value => value,
+				}),
+			});
+		} else {
+			await ctx.render('interaction', {
+				client,
+				details,
+				title: 'Authorize',
+				debug: querystring.stringify(details.params, ',<br/>', ' = ', {
+					encodeURIComponent: value => value,
+				}),
+				interaction: querystring.stringify(details.interaction, ',<br/>', ' = ', {
+					encodeURIComponent: value => value,
+				}),
+			});
+		}
+
+		await next();
+	});
+
+	const body = bodyParser();
+
+	router.post('/interaction/:grant/confirm', body, async (ctx, next) => {
+		const result = { consent: {} };
+		await provider.interactionFinished(ctx.req, ctx.res, result);
+		await next();
+	});
+
+	router.post('/interaction/:grant/login', body, async (ctx, next) => {
+
+		const account = await Account.findByLogin(ctx.request.body.login);
+		const details = await provider.interactionDetails(ctx.req);
+		const result = {
+				login: {
+					account: account.accountId,
+					acr: details.params.acr_values || 'Level3',
+					amr: 'BankID',
+					remember: !!ctx.request.body.remember,
+					ts: Math.floor(Date.now() / 1000),
+				},
+				consent: {},
+		};
+		await provider.interactionFinished(ctx.req, ctx.res, result);
+		await next();
+	});
+
+	router.get('/*', body, async (ctx, next) => {
+		console.log('req:' + JSON.stringify(ctx.request));
+		console.log('header: ' + ctx.request.header['x-ms-client-principal-id']);
+		await next();
+	});
+
+	provider.use(router.routes());
 })
-  .then(() => provider.listen(port))
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  });
+.then(() => provider.listen(port))
+.catch((err) => {
+	console.error(err);
+	process.exitCode = 1;
+});
