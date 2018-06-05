@@ -12,13 +12,13 @@ Please note that this should only be used in test or local environments as the k
 
 The stub-oidc-provider has been deployed as an Azure AppService (https://docs.microsoft.com/en-us/azure/app-service/containers/tutorial-custom-docker-image) and its metadata is available on:
 
-- https://nav-idporten-stub.azurewebsites.net/.well-known/openid-configuration
+- https://stub-oidc-provider.azurewebsites.net/.well-known/openid-configuration
 
 For NAV IKT users the  stub-oidc-provider will never be used directly (with the exception of the actual user interaction). It has however been configured as an Identity Provider in test environments so that users can choose to use this provider for test purposes.
 
 If you want to test the provider and see the contents of the ID token you can hit this link:
 
-- https://nav-idporten-stub.azurewebsites.net/auth?client_id=test_implicit_app&redirect_uri=https://jwt.io&response_type=id_token&scope=openid&nonce=123&state=321&acr_values=Level4
+- https://stub-oidc-provider.azurewebsites.net/auth?client_id=test_implicit_app&redirect_uri=https://jwt.io&response_type=id_token&scope=openid&nonce=123&state=321&acr_values=Level4
 
 
 ### 
