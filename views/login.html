@@ -1,6 +1,6 @@
 <form autocomplete="off" action="/interaction/<%= details.uuid %>/login" method="post">
   <input type="hidden" name="uuid" value="<%= details.uuid %>"/>
   <input required type="text" name="login" placeholder="Enter any user/subject" <% if (!details.params.login_hint) { %>autofocus="on"<% } else { %> value="<%= details.params.login_hint %>" <% } %>>
-  <div style="padding-top: 0; padding-bottom:10px;" class="grant-debug">(you are currently authenticated as <%= aadPrincipalName %>)</div>
+  <div style="padding-top: 0; padding-bottom:10px;" class="grant-debug">(you are currently authenticated as <%= principalName %>)</div>
   <button type="submit" class="login login-submit">Sign-in</button>
 </form>

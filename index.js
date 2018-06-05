@@ -17,16 +17,29 @@ const issuer = process.env.ISSUER || 'https://localhost:8080';
 //AAD specific header, can only be set by azure when running as AppService
 const PRINCIPAL_NAME_HEADER = 'x-ms-client-principal-name';
 const DOMAIN_HINT = process.env.DOMAIN_HINT || 'nav.no';
+const DEBUG_REQUEST = process.env.DEBUG_REQUEST || false;
+
 config.findById = Account.findById;
 
 const provider = new Provider(issuer, config);
 provider.defaultHttpOptions = { timeout: 15000 };
 
+function enforceAuthenticationIfEnabled(ctx){
+	if(process.env['WEBSITE_AUTH_ENABLED'] === 'True'){
+		console.log('Authentication is enabled for site, check required headers');
+		if (!ctx.get(PRINCIPAL_NAME_HEADER)){
+			console.log('no principal id, found redirecting to /.auth/login/aad');
+			ctx.redirect('/.auth/login/aad?domain_hint='+ DOMAIN_HINT +'&post_login_redirect_url=' + ctx.url);
+		}  
+	} else {
+		console.log('Authentication is NOT enabled for site. Value of WEBSITE_AUTH_ENABLED=' + process.env['WEBSITE_AUTH_ENABLED']);
+	}
+}
 
 provider.initialize({
-	clients,
-	keystore: { keys: certificates },
-}).then(() => {
+		clients,
+		keystore: { keys: certificates },
+	}).then(() => {
 	render(provider.app, {
 		cache: false,
 		layout: '_layout',
@@ -59,24 +72,15 @@ provider.initialize({
 
 		const details = await provider.interactionDetails(ctx.req);
 		const client = await provider.Client.find(details.params.client_id);
-
-		if(process.env['WEBSITE_AUTH_ENABLED'] === 'True'){
-			console.log('Authentication is enabled for site, check required headers');
-			if (!ctx.get(PRINCIPAL_NAME_HEADER)){
-				console.log('no principal id, found redirecting to /.auth/login/aad');
-				ctx.redirect('/.auth/login/aad?domain_hint='+ DOMAIN_HINT +'&post_login_redirect_url=' + ctx.url);
-			}  
-		} else {
-			console.log('Authentication is NOT enabled for site. Value of WEBSITE_AUTH_ENABLED=' + process.env['WEBSITE_AUTH_ENABLED']);
-		}
-
+		
+		enforceAuthenticationIfEnabled(ctx);
 
 		if (details.interaction.error === 'login_required') {
 			await ctx.render('login', {
 				client,
 				details,
 				title: 'Sign-in as:',
-				aadPrincipalName: ctx.request.header['x-ms-client-principal-name'] || 'anonymous',
+				principalName: ctx.request.header[PRINCIPAL_NAME_HEADER] || 'anonymous',
 				debug: querystring.stringify(details.params, ',<br/>', ' = ', {
 					encodeURIComponent: value => value,
 				}),
@@ -104,12 +108,15 @@ provider.initialize({
 	const body = bodyParser();
 
 	router.post('/interaction/:grant/confirm', body, async (ctx, next) => {
+		enforceAuthenticationIfEnabled(ctx);
 		const result = { consent: {} };
 		await provider.interactionFinished(ctx.req, ctx.res, result);
 		await next();
 	});
 
 	router.post('/interaction/:grant/login', body, async (ctx, next) => {
+		
+		enforceAuthenticationIfEnabled(ctx);
 		const principalName = ctx.request.header[PRINCIPAL_NAME_HEADER] || 'anonymous';
 		const account = await Account.findByLogin(ctx.request.body.login, principalName);
 		const details = await provider.interactionDetails(ctx.req);
@@ -128,8 +135,9 @@ provider.initialize({
 	});
 
 	router.get('/*', body, async (ctx, next) => {
-		console.log('req:' + JSON.stringify(ctx.request));
-		console.log('header: ' + ctx.request.header['x-ms-client-principal-id']);
+		if(DEBUG_REQUEST){
+			console.log('GET request:' + JSON.stringify(ctx.request));
+		}
 		await next();
 	});
 
