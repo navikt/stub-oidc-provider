@@ -16,7 +16,7 @@ const issuer = process.env.ISSUER || 'https://localhost:8080';
 
 //AAD specific header, can only be set by azure when running as AppService
 const PRINCIPAL_NAME_HEADER = 'x-ms-client-principal-name';
-
+const DOMAIN_HINT = process.env.DOMAIN_HINT || 'nav.no';
 config.findById = Account.findById;
 
 const provider = new Provider(issuer, config);
@@ -64,7 +64,7 @@ provider.initialize({
 			console.log('Authentication is enabled for site, check required headers');
 			if (!ctx.get(PRINCIPAL_NAME_HEADER)){
 				console.log('no principal id, found redirecting to /.auth/login/aad');
-				ctx.redirect('/.auth/login/aad?post_login_redirect_url=' + ctx.url);
+				ctx.redirect('/.auth/login/aad?domain_hint='+ DOMAIN_HINT +'&post_login_redirect_url=' + ctx.url);
 			}  
 		} else {
 			console.log('Authentication is NOT enabled for site. Value of WEBSITE_AUTH_ENABLED=' + process.env['WEBSITE_AUTH_ENABLED']);
