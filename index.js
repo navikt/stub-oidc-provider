@@ -60,7 +60,7 @@ provider.initialize({
 		const details = await provider.interactionDetails(ctx.req);
 		const client = await provider.Client.find(details.params.client_id);
 
-		if(process.env['WEBSITE_AUTH_ENABLED'] === 'true'){
+		if(process.env['WEBSITE_AUTH_ENABLED'] === 'True'){
 			console.log('Authentication is enabled for site, check required headers');
 			if (!ctx.get(PRINCIPAL_NAME_HEADER)){
 				console.log('no principal id, found redirecting to /.auth/login/aad');
