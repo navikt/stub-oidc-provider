@@ -119,7 +119,7 @@ module.exports.clients = [
 	client_id: process.env.STUB_CLIENT_ID || 'stubOidcClient',
 	client_secret: process.env.STUB_CLIENT_SECRET || 'secretsarehardtokeep',
 	grant_types: ['refresh_token', 'authorization_code'],
-	redirect_uris: ['http://localhost:7000/callback', 'https://login.microsoftonline.com/te/navtestb2c.onmicrosoft.com/oauth2/authresp'],
+	redirect_uris: [process.env.REDIRECT_URI || 'http://localhost:7000/callback', 'https://login.microsoftonline.com/te/navtestb2c.onmicrosoft.com/oauth2/authresp'],
 	token_endpoint_auth_method: 'client_secret_post'
 }];
 
