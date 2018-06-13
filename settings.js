@@ -107,6 +107,13 @@ module.exports.config = {
 	 
 };
 
+var envRedirectUris = process.env.REDIRECT_URIS;
+var redirectUris = ['http://localhost:7000/callback', 'https://login.microsoftonline.com/te/navtestb2c.onmicrosoft.com/oauth2/authresp'];
+if(envRedirectUris){
+	redirectUris = envRedirectUris.split(',');
+}
+console.log('setting redirecturis for '+ (process.env.STUB_CLIENT_ID || 'stubOidcClient') +' to:' + redirectUris)
+	
 module.exports.clients = [
 {
     client_id: 'test_implicit_app',
@@ -119,7 +126,7 @@ module.exports.clients = [
 	client_id: process.env.STUB_CLIENT_ID || 'stubOidcClient',
 	client_secret: process.env.STUB_CLIENT_SECRET || 'secretsarehardtokeep',
 	grant_types: ['refresh_token', 'authorization_code'],
-	redirect_uris: ['http://localhost:7000/callback', 'https://login.microsoftonline.com/te/navtestb2c.onmicrosoft.com/oauth2/authresp'],
+	redirect_uris: redirectUris,
 	token_endpoint_auth_method: 'client_secret_post'
 }];
 
