@@ -7,6 +7,10 @@ const bodyParser = require('koa-body');
 const querystring = require('querystring');
 const Router = require('koa-router');
 const render = require('koa-ejs');
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
 
 const Account = require('./account');
 const { config, clients, certificates} = require('./settings');
@@ -30,7 +34,7 @@ function enforceAuthenticationIfEnabled(ctx){
 		if (!ctx.get(PRINCIPAL_NAME_HEADER)){
 			console.log('no principal id, found redirecting to /.auth/login/aad');
 			ctx.redirect('/.auth/login/aad?domain_hint='+ DOMAIN_HINT +'&post_login_redirect_url=' + ctx.url);
-		}  
+		}
 	} else {
 		console.log('Authentication is NOT enabled for site. Value of WEBSITE_AUTH_ENABLED=' + process.env['WEBSITE_AUTH_ENABLED']);
 	}
@@ -66,13 +70,12 @@ provider.initialize({
 		});
 	}
 
-	const router = new Router(); 
+	const router = new Router();
 
 	router.get('/interaction/:grant', async (ctx, next) => {
 
 		const details = await provider.interactionDetails(ctx.req);
 		const client = await provider.Client.find(details.params.client_id);
-		
 		enforceAuthenticationIfEnabled(ctx);
 
 		if (details.interaction.error === 'login_required') {
@@ -115,7 +118,6 @@ provider.initialize({
 	});
 
 	router.post('/interaction/:grant/login', body, async (ctx, next) => {
-		
 		enforceAuthenticationIfEnabled(ctx);
 		const principalName = ctx.request.header[PRINCIPAL_NAME_HEADER] || 'anonymous';
 		const account = await Account.findByLogin(ctx.request.body.login, principalName);
@@ -143,7 +145,11 @@ provider.initialize({
 
 	provider.use(router.routes());
 })
-.then(() => provider.listen(port))
+.then(() => {
+	app.use(cors());
+	app.use(provider.callback);
+	app.listen(port);
+})
 .catch((err) => {
 	console.error(err);
 	process.exitCode = 1;
