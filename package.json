@@ -10,14 +10,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@koa/cors": "^2.2.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "koa": "^2.11.0",
     "koa-body": "^2.5.0",
     "koa-ejs": "^4.1.1",
-    "koa-mount": "^4.0.0",
-    "koa-session": "^5.12.3",
     "oidc-provider": "^3.0.2"
   }
 }
