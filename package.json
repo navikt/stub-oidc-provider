@@ -2,7 +2,7 @@
   "name": "stub-oidc-provider",
   "version": "1.0.0",
   "description": "stub-oidc-provider",
-  "repository" : "https://github.com/navikt/stub-oidc-provider",
+  "repository": "https://github.com/navikt/stub-oidc-provider",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -10,7 +10,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "koa": "^2.5.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "koa": "^2.11.0",
     "koa-body": "^2.5.0",
     "koa-ejs": "^4.1.1",
     "oidc-provider": "^3.0.2"

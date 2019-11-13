@@ -2,6 +2,7 @@
 .project
 .settings/
 .sublime-project
+.idea
 
 # Logs
 logs
