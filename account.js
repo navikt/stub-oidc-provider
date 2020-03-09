@@ -1,13 +1,16 @@
 const store = new Map();
-const logins = new Map();
 const uuid = require('uuid/v4');
 
 class Account {
   constructor(id, principalName) {
-    this.accountId = id || uuid();
+    this.pid = id || uuid();
     this.accountUuid = uuid();
     this.principalName = principalName;
-    store.set(this.accountId, this);
+    const accountId = this.pid + ':' + principalName;
+    this.accountId = accountId;
+    if (!store.get(accountId)) {
+      store.set(accountId, this);
+    }
   }
 
   /**
@@ -20,19 +23,11 @@ class Account {
    */
   async claims(use, scope) { // eslint-disable-line no-unused-vars
     return {
-    		sub: this.accountUuid, 
-        pid: this.accountId,
-        locale: 'nb',
-        jti: this.principalName + ':' + this.accountUuid,
+      sub: this.accountUuid,
+      pid: this.pid,
+      locale: 'nb',
+      jti: this.principalName + ':' + this.accountUuid,
     };
-  }
-
-  static findByLogin(login, principalName) {
-    if (!logins.get(login)) {
-      logins.set(login, new Account(login, principalName));
-    }
-
-    return Promise.resolve(logins.get(login));
   }
 
   static async findById(ctx, id, token) { // eslint-disable-line no-unused-vars

@@ -62,8 +62,8 @@ provider.initialize({
 				ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'));
 			} else {
 				ctx.body = {
-						error: 'invalid_request',
-						error_description: 'only use https',
+					error: 'invalid_request',
+					error_description: 'only use https',
 				};
 				ctx.status = 400;
 			}
@@ -120,17 +120,17 @@ provider.initialize({
 	router.post('/interaction/:grant/login', body, async (ctx, next) => {
 		enforceAuthenticationIfEnabled(ctx);
 		const principalName = ctx.request.header[PRINCIPAL_NAME_HEADER] || 'anonymous';
-		const account = await Account.findByLogin(ctx.request.body.login, principalName);
+		const account = new Account(ctx.request.body.login, principalName);
 		const details = await provider.interactionDetails(ctx.req);
 		const result = {
-				login: {
-					account: account.accountId,
-					acr: details.params.acr_values || 'Level3',
-					amr: 'BankID',
-					remember: !!ctx.request.body.remember,
-					ts: Math.floor(Date.now() / 1000),
-				},
-				consent: {},
+			login: {
+				account: account.accountId,
+				acr: details.params.acr_values || 'Level3',
+				amr: 'BankID',
+				remember: !!ctx.request.body.remember,
+				ts: Math.floor(Date.now() / 1000),
+			},
+			consent: {},
 		};
 		await provider.interactionFinished(ctx.req, ctx.res, result);
 		await next();
