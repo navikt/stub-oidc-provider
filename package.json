@@ -15,6 +15,6 @@
     "koa": "^2.11.0",
     "koa-body": "^3.0.0",
     "koa-ejs": "^4.1.1",
-    "oidc-provider": "^6.0.3"
+    "oidc-provider": "^3.0.2"
   }
 }
